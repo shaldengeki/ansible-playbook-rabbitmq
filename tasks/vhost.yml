@@ -23,6 +23,22 @@
     state=present
     force={{ item.force|default('yes') }}
   with_items: rabbitmq_users_definitions
+  when: rabbitmq_users_definitions is not mapping
+
+- name: add rabbitmq user and set privileges
+  rabbitmq_user:
+    user={{ item.value.user }}
+    password={{ item.value.password }}
+    vhost={{ item.value.vhost | default('/', false) }}
+    node={{ item.value.node | default('rabbit') }}
+    tags={{ (item.value.tags | default('')) | join(',') }}
+    configure_priv={{ item.value.configure_priv | default('.*') }}
+    read_priv={{ item.value.read_priv | default('.*') }}
+    write_priv={{ item.value.write_priv | default('.*') }}
+    state=present
+    force={{ item.value.force|default('yes') }}
+  with_dict: rabbitmq_users_definitions
+  when: rabbitmq_users_definitions is mapping
 
 - name: remove guest user (hostname)
   rabbitmq_user:
